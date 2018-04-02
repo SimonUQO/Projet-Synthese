@@ -16,11 +16,15 @@ import org.jsoup.Jsoup;
  *
  */
 public class Mail {
-
+	
+	String date;
+	String sourceIP;
+	String sourceDomain;
+	String md5;
 	String from;
+	String to;
 	String subject;
 	String body;
-	String date;
 	ArrayList<MimeBodyPart> attachments;
 	
 	public Mail(){
@@ -28,8 +32,12 @@ public class Mail {
 	}
 
 	//Constructeur principale
-	public Mail(String from, String subject, String body, String date, ArrayList<MimeBodyPart> attachments) {
+	public Mail(String sourceIP, String sourceDomain, String md5, String from, String to, String subject, String body, String date, ArrayList<MimeBodyPart> attachments) {
+		this.sourceIP = sourceIP;
+		this.sourceDomain = sourceDomain;
+		this.md5 = md5;
 		this.from = from;
+		this.to = to;
 		this.subject = subject;
 		this.body = body;
 		this.date = date;
@@ -41,18 +49,50 @@ public class Mail {
 	public Mail getContent(MimeMessage message) throws MessagingException, IOException {
 		String body = ""; //Initialisation
 		String from = "";
+		String to = "";
+		String subject = "";
+		String date = "";
+		String sourceIP = "";
+		String sourceDomain = "";
+		String md5 = "";
+		
 		ArrayList<MimeBodyPart> attachments = new ArrayList<MimeBodyPart>(); //Création d'une liste pour les attachements
 		String contentType = message.getContentType(); //Variable permettant d'identifer le type de contenu lu
-		Address[] addresses = message.getFrom(); //Tableau contenant les addresses courriels de l'auteur du courriel
+		Address[] addressesFrom = message.getFrom(); //Tableau contenant les addresses courriels de l'auteur du courriel
+		Address[] addressesTo = message.getAllRecipients(); //Tableau contenant les addresses courriels de l'auteur du courriel
 		
-		//Provient d'une seule source
-		if (addresses.length == 1)
-			from = addresses[0].toString();
+		sourceIP = message.getHeader("Received", "");
+		for(int i=0; i < sourceIP.length(); i++){
+			if(sourceIP.charAt(i) == '['){
+				sourceIP = sourceIP.substring(i, i + 15);
+			}
+		}
+		
+		md5 = message.getContentMD5();
+		
+		//On parse les Adresses TO qui provient d'une seule source
+		if (addressesTo.length == 1)
+			to = addressesTo[0].toString();
 		//Provient de plusieurs sources
 		else {
-			for (int num = 0; num < addresses.length - 1; num++)
-				from += addresses[num].toString() + ", ";
-			from += addresses[addresses.length].toString();
+			to = null;
+		}
+		//On parse les Adresses FROM qui provient d'une seule source
+		if (addressesFrom.length == 1)
+			from = addressesFrom[0].toString();
+		//Provient de plusieurs sources
+		else {
+			for (int num = 0; num < addressesFrom.length - 1; num++)
+				from += addressesFrom[num].toString() + ", ";
+			from += addressesFrom[addressesFrom.length].toString();
+		}
+		//On parse le Sujet
+		if (message.getSubject() != null){
+			subject = message.getSubject();
+		}
+		//On parse la Date
+		if (message.getSentDate() != null){
+			date = message.getSentDate().toString();
 		}
 		//Courriel formaté en texte simple
 		if (contentType.contains("TEXT/PLAIN") || contentType.contains("text/plain")) {
@@ -78,9 +118,9 @@ public class Mail {
 				else if (part.getContentType().contains("TEXT/HTML") || contentType.contains("text/html"))
 					body += Jsoup.parse(content).text();
 				else
-					body += content.replace("\n", "").replace("\r", ""); //+= content
+					body += Jsoup.parse(content).text();
 			}
 		}
-		return new Mail(from, message.getSubject(), body, message.getSentDate().toString(), attachments);
+		return new Mail(sourceIP, sourceDomain, md5, from, to, subject, body, date, null);
 	}
 }
