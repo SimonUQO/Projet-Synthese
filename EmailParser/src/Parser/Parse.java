@@ -24,7 +24,7 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 public class Parse {
 
-	public static void main(String[] args) throws MessagingException, IOException {
+	public static void main(String[] args) throws MessagingException, IOException{
 
 		//String fichier = "/Users/simon/Desktop/Courriels/test5.eml"; //Chemin du fichier à parser
 		File fichierJSON = new File("/Users/simon/Desktop/Courriels/data/data.json");
@@ -63,6 +63,8 @@ public class Parse {
 	
 	public static void ecrireFichierJSON(StringBuilder sb, PrintWriter pw, ObjectMapper mapper, File fichier, MailList ml, int i) throws JsonGenerationException, JsonMappingException, IOException{  
 	    // Writing to a file
+		sb.append("{\"index\":{\"_index\":\"maildata\",\"_type\":\"mail\",\"_id\":" + i + "}}");
+		sb.append('\n');
 		sb.append(mapper.writeValueAsString(ml.list.get(i))); 
 	    sb.append('\n');  
 	}

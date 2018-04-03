@@ -62,9 +62,26 @@ public class Mail {
 		Address[] addressesTo = message.getAllRecipients(); //Tableau contenant les addresses courriels de l'auteur du courriel
 		
 		sourceIP = message.getHeader("Received", "");
+		int debut = 0;
+		int fin = 0;
 		for(int i=0; i < sourceIP.length(); i++){
 			if(sourceIP.charAt(i) == '['){
-				sourceIP = sourceIP.substring(i, i + 15);
+				debut = i + 1;
+			} else if(sourceIP.charAt(i) == ']'){
+				fin = i;
+				sourceIP = sourceIP.substring(debut, fin);
+			}
+		}
+		
+		sourceDomain = message.getHeader("Received", "");
+		debut = 0;
+		fin = 0;
+		for(int i=0; i < sourceDomain.length(); i++){
+			if(sourceDomain.charAt(i) == '('){
+				debut = i + 1;
+			} else if(sourceDomain.charAt(i) == '['){
+				fin = i - 1;
+				sourceDomain = sourceDomain.substring(debut, fin);
 			}
 		}
 		
@@ -111,16 +128,17 @@ public class Mail {
 			for (int count = 0; count < numParts; count++) {
 				MimeBodyPart part = (MimeBodyPart) mp.getBodyPart(count);
 				String content = part.getContent().toString();
-				//Quand on identifie un attachement, on l'ajoute
-				if (MimeBodyPart.ATTACHMENT.equalsIgnoreCase(part.getDisposition()))
-					attachments.add(part);
-				//Sinon, on ajoute le reste
-				else if (part.getContentType().contains("TEXT/HTML") || contentType.contains("text/html"))
-					body += Jsoup.parse(content).text();
-				else
-					body += Jsoup.parse(content).text();
+					//Quand on identifie un attachement, on l'ajoute
+					if (MimeBodyPart.ATTACHMENT.equalsIgnoreCase(part.getDisposition()))
+						attachments.add(part);
+					//Sinon, on ajoute le reste
+					else if (part.getContentType().contains("TEXT/HTML") || contentType.contains("text/html"))
+						body += Jsoup.parse(content).text();
+					else
+						body += Jsoup.parse(content).text();
+				}
+				
 			}
-		}
-		return new Mail(sourceIP, sourceDomain, md5, from, to, subject, body, date, null);
+		return new Mail(sourceIP, sourceDomain, md5, from, to, subject, " ", date, null);
 	}
 }
