@@ -1,10 +1,6 @@
 package Parser;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
 import javax.mail.Address;
-import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -20,33 +16,39 @@ public class Mail {
 	String date;
 	String sourceIP;
 	String sourceDomain;
-	String md5;
 	String from;
 	String to;
 	String subject;
 	String body;
-	ArrayList<MimeBodyPart> attachments;
+	String attachment;
+	String encoding;
+	String ville;
+	String pays;
+	String geopoint;
 	
 	public Mail(){
 		
 	}
 
 	//Constructeur principale
-	public Mail(String sourceIP, String sourceDomain, String md5, String from, String to, String subject, String body, String date, ArrayList<MimeBodyPart> attachments) {
+	public Mail(String sourceIP, String sourceDomain, String from, String to, String subject, String body, String date, String attachment, String encoding, String pays, String ville, String geopoint) {
 		this.sourceIP = sourceIP;
 		this.sourceDomain = sourceDomain;
-		this.md5 = md5;
 		this.from = from;
 		this.to = to;
 		this.subject = subject;
 		this.body = body;
 		this.date = date;
-		this.attachments = attachments;
+		this.attachment = attachment;
+		this.encoding = encoding;
+		this.ville = ville;
+		this.pays = pays;
+		this.geopoint = geopoint;
 	}
 
 	//Méthode permettant de séparer les champs principales d'un courriel:
 	//Body, From, Date, Subject & Attachments
-	public Mail getContent(MimeMessage message) throws MessagingException, IOException {
+	public Mail getContent(MimeMessage message) throws Exception {
 		String body = ""; //Initialisation
 		String from = "";
 		String to = "";
@@ -54,9 +56,16 @@ public class Mail {
 		String date = "";
 		String sourceIP = "";
 		String sourceDomain = "";
-		String md5 = "";
+		String encoding = "";
+		String attachment = "Aucun attachement";
+		String pays = "";
+		String ville = "";
+		String geopoint = "";
+		double lon = 0;
+		double lat = 0;
 		
-		ArrayList<MimeBodyPart> attachments = new ArrayList<MimeBodyPart>(); //Création d'une liste pour les attachements
+		
+		//ArrayList<MimeBodyPart> attachments = new ArrayList<MimeBodyPart>(); //Création d'une liste pour les attachements
 		String contentType = message.getContentType(); //Variable permettant d'identifer le type de contenu lu
 		Address[] addressesFrom = message.getFrom(); //Tableau contenant les addresses courriels de l'auteur du courriel
 		Address[] addressesTo = message.getAllRecipients(); //Tableau contenant les addresses courriels de l'auteur du courriel
@@ -73,6 +82,13 @@ public class Mail {
 			}
 		}
 		
+		Geo g = new Geo(sourceIP);
+		pays = g.pays;
+		ville = g.ville;
+		lon = g.lon;
+		lat = g.lat;
+		geopoint = (lat + "," + lon);
+		
 		sourceDomain = message.getHeader("Received", "");
 		debut = 0;
 		fin = 0;
@@ -84,8 +100,6 @@ public class Mail {
 				sourceDomain = sourceDomain.substring(debut, fin);
 			}
 		}
-		
-		md5 = message.getContentMD5();
 		
 		//On parse les Adresses TO qui provient d'une seule source
 		if (addressesTo.length == 1)
@@ -111,6 +125,7 @@ public class Mail {
 		if (message.getSentDate() != null){
 			date = message.getSentDate().toString();
 		}
+		
 		//Courriel formaté en texte simple
 		if (contentType.contains("TEXT/PLAIN") || contentType.contains("text/plain")) {
 			Object content = message.getContent();
@@ -129,16 +144,17 @@ public class Mail {
 				MimeBodyPart part = (MimeBodyPart) mp.getBodyPart(count);
 				String content = part.getContent().toString();
 					//Quand on identifie un attachement, on l'ajoute
-					if (MimeBodyPart.ATTACHMENT.equalsIgnoreCase(part.getDisposition()))
-						attachments.add(part);
+					if (MimeBodyPart.ATTACHMENT.equalsIgnoreCase(part.getDisposition())){
+						attachment = part.getFileName();
+						encoding = part.getEncoding();
+					}
 					//Sinon, on ajoute le reste
 					else if (part.getContentType().contains("TEXT/HTML") || contentType.contains("text/html"))
 						body += Jsoup.parse(content).text();
 					else
 						body += Jsoup.parse(content).text();
-				}
-				
+				}	
 			}
-		return new Mail(sourceIP, sourceDomain, md5, from, to, subject, " ", date, null);
+		return new Mail(sourceIP, sourceDomain, from, to, subject, body, date, attachment, encoding, pays, ville, geopoint);
 	}
 }

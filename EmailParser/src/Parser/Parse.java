@@ -18,13 +18,15 @@ import org.codehaus.jackson.annotate.JsonAutoDetect.Visibility;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
+
+
 /**
  * Classe principale de l'application pour lancer le parseur
  * Contient notre classe main lancé à l'exécution
  */
 public class Parse {
 
-	public static void main(String[] args) throws MessagingException, IOException{
+	public static void main(String[] args) throws Exception{
 
 		//String fichier = "/Users/simon/Desktop/Courriels/test5.eml"; //Chemin du fichier à parser
 		File fichierJSON = new File("/Users/simon/Desktop/Courriels/data/data.json");
