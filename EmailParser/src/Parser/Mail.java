@@ -64,7 +64,6 @@ public class Mail {
 		double lon = 0;
 		double lat = 0;
 		
-		
 		//ArrayList<MimeBodyPart> attachments = new ArrayList<MimeBodyPart>(); //Création d'une liste pour les attachements
 		String contentType = message.getContentType(); //Variable permettant d'identifer le type de contenu lu
 		Address[] addressesFrom = message.getFrom(); //Tableau contenant les addresses courriels de l'auteur du courriel
@@ -73,7 +72,7 @@ public class Mail {
 		sourceIP = message.getHeader("Received", "");
 		int debut = 0;
 		int fin = 0;
-		for(int i=0; i < sourceIP.length(); i++){
+		for(int i = 0; i < sourceIP.length(); i++){
 			if(sourceIP.charAt(i) == '['){
 				debut = i + 1;
 			} else if(sourceIP.charAt(i) == ']'){
@@ -92,11 +91,11 @@ public class Mail {
 		sourceDomain = message.getHeader("Received", "");
 		debut = 0;
 		fin = 0;
-		for(int i=0; i < sourceDomain.length(); i++){
+		for(int i = 0; i < sourceDomain.length(); i++){
 			if(sourceDomain.charAt(i) == '('){
 				debut = i + 1;
-			} else if(sourceDomain.charAt(i) == '['){
-				fin = i - 1;
+			} else if(sourceDomain.charAt(i) == ')'){
+				fin = i;
 				sourceDomain = sourceDomain.substring(debut, fin);
 			}
 		}
@@ -128,7 +127,12 @@ public class Mail {
 		
 		//Courriel formaté en texte simple
 		if (contentType.contains("TEXT/PLAIN") || contentType.contains("text/plain")) {
-			Object content = message.getContent();
+			Object content = null;
+			try{
+				content = message.getContent();
+			} catch(Exception e){
+				
+			}
 			if (content != null)
 				body += content.toString(); 
 		//Courriel formaté en HTML
@@ -142,7 +146,13 @@ public class Mail {
 			int numParts = mp.getCount();
 			for (int count = 0; count < numParts; count++) {
 				MimeBodyPart part = (MimeBodyPart) mp.getBodyPart(count);
-				String content = part.getContent().toString();
+				String content = "";
+				try{
+					content = part.getContent().toString();
+				} catch(Exception e){
+					content = "";
+					System.out.println(e.toString());
+				}
 					//Quand on identifie un attachement, on l'ajoute
 					if (MimeBodyPart.ATTACHMENT.equalsIgnoreCase(part.getDisposition())){
 						attachment = part.getFileName();

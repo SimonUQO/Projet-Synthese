@@ -26,10 +26,9 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 public class Parse {
 
-	public static void main(String[] args) throws Exception{
+	public static void main(String[] args) throws Exception, NullPointerException{
 
-		//String fichier = "/Users/simon/Desktop/Courriels/test5.eml"; //Chemin du fichier à parser
-		File fichierJSON = new File("/Users/simon/Desktop/Courriels/data/data.json");
+		File fichierJSON = new File("/Users/simon/Desktop/Courriels/data/datauqah.json");
 		PrintWriter pw = new PrintWriter(fichierJSON); 
 		StringBuilder sb = new StringBuilder();
 		ObjectMapper mapper = new ObjectMapper(); //Permet d'écrire des objets en JSON
@@ -44,11 +43,16 @@ public class Parse {
 			String fichier = "/Users/simon/Desktop/Test/";
 			fichier += ml.listMail.get(i);
 			System.out.println(fichier);
-				MimeMessage message = chargerMessage(fichier);	
+			MimeMessage message = chargerMessage(fichier);
+//			try{
 				Mail mail = new Mail(); //Création d'un courriel parsé
 				mail = mail.getContent(message);
 				ml.ajoutMail(mail); //Ajout de notre courriel à la liste
 				ecrireFichierJSON(sb, pw, mapper, fichierJSON, ml, i);
+//			} catch(Exception e) {
+//				System.out.println("Fichier Non Parsé!");
+//				System.out.println(e.toString());
+//			}		
 		}
 	    pw.write(sb.toString());
 	    pw.flush();
@@ -65,7 +69,7 @@ public class Parse {
 	
 	public static void ecrireFichierJSON(StringBuilder sb, PrintWriter pw, ObjectMapper mapper, File fichier, MailList ml, int i) throws JsonGenerationException, JsonMappingException, IOException{  
 	    // Writing to a file
-		sb.append("{\"index\":{\"_index\":\"maildata\",\"_type\":\"mail\",\"_id\":" + i + "}}");
+		sb.append("{\"index\":{\"_index\":\"mailuqah\",\"_type\":\"mail\",\"_id\":" + i + "}}");
 		sb.append('\n');
 		sb.append(mapper.writeValueAsString(ml.list.get(i))); 
 	    sb.append('\n');  
