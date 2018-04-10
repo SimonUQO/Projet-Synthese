@@ -35,12 +35,12 @@ public class Parse {
 		mapper.setVisibility(JsonMethod.FIELD, Visibility.ANY); //Permet la visiblité de nos propriétés
 		
 		MailList ml = new MailList();
-		final File dossier = new File("/Users/simon/Desktop/Test"); //Chemin du dossier où sont les courriels
+		final File dossier = new File("/Users/simon/Desktop/uqah"); //Chemin du dossier où sont les courriels
 		listCourrielsDossier(dossier, ml); //Ajouter tous les courriels du dossier à la liste
 		
 		//Pour chaque courriel, on crée un objet MimeMessage et on le parse
 		for (int i = 0; i < ml.listMail.size(); i++){
-			String fichier = "/Users/simon/Desktop/Test/";
+			String fichier = "/Users/simon/Desktop/uqah/";
 			fichier += ml.listMail.get(i);
 			System.out.println(fichier);
 			MimeMessage message = chargerMessage(fichier);
